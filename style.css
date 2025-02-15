@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+    outline: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+canvas {
+    position: absolute;
+    width: 100%;
+}
+video {
+    position: absolute;
+    width: 100%;
+}
