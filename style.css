@@ -5,6 +5,12 @@ body {
     overflow: hidden;
 }
 
+.center {
+    margin: auto;
+    width: 50%;
+    padding: 2rem;
+}
+
 canvas {
     position: absolute;
     width: 100%;

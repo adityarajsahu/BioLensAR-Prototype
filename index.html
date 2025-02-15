@@ -73,13 +73,35 @@
             </div>
         </nav>
 
-        <video id="input_video" style="display: none"></video>
-        <canvas id="visualiseCanvas" width="1280px" height="720px"></canvas>
-        <canvas id="renderCanvas" width="1280px" height="720px"></canvas>
-
-        <div class="visuaiseContainer" style="bottom: 10px; position: absolute">
-            Visualise <input type="checkbox" id="visualise" />
+        <div class="container center">
+            <video id="input_video" style="display: none"></video>
+            <canvas
+                id="visualiseCanvas"
+                class="d-flex justify-content-center align-items-center"
+                style="width: 50%; height: 70%"
+            ></canvas>
+            <canvas
+                id="renderCanvas"
+                class="d-flex justify-content-center align-items-center"
+                style="width: 50%; height: 70%"
+            ></canvas>
         </div>
+        <div
+            class="visualiseContainer mb-3 d-flex justify-content-center align-items-center position-fixed bottom-0 w-100 form-check form-switch"
+        >
+            <input class="form-check-input m-2" type="checkbox" role="switch" id="visualise" checked />
+            <label class="form-check-label" for="visualise">Visualise Landmarks</label>
+        </div>
+
+        <!-- <div class="container">
+            <video id="input_video" style="display: none"></video>
+            <canvas id="visualiseCanvas" class="mb-4"></canvas>
+            <canvas id="renderCanvas"></canvas>
+        </div>
+
+        <div class="visuaiseContainer mt-3" style="bottom: 10px; position: absolute">
+            Visualise <input type="checkbox" id="visualise" />
+        </div> -->
 
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
