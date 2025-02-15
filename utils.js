@@ -66,10 +66,12 @@ function torsoScalingFactor(landmarks, videoWidth, videoHeight){
         x: landmarks[leftShoulderIndex].x * videoWidth,
         y: landmarks[leftShoulderIndex].y * videoHeight
     }
+
     const rightShoulder = {
         x: landmarks[rightShoulderIndex].x * videoWidth,
         y: landmarks[rightShoulderIndex].y * videoHeight
     }
+
     const leftHipIndex = 23;
     const rightHipIndex = 24;
     const leftHip = {
@@ -80,9 +82,12 @@ function torsoScalingFactor(landmarks, videoWidth, videoHeight){
         x: landmarks[rightHipIndex].x * videoWidth,
         y: landmarks[rightHipIndex].y * videoHeight
     }
+
+
     // mid point
     const shoulderMidPoint = findMidPoint(leftShoulder, rightShoulder);
     const hipMidPoint = findMidPoint(leftHip, rightHip);
+
     const distance = distanceBetweenPoints(shoulderMidPoint, hipMidPoint);
     return distance / 100;
 }
