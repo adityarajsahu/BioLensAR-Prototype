@@ -16,7 +16,8 @@ canvas {
     width: 100%;
 }
 
-video {
+.input_video {
     position: absolute;
     width: 100%;
+    display: none;
 }

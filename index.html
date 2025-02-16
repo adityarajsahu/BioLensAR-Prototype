@@ -52,7 +52,7 @@
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
-                                Dropdown
+                                Select Organ
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
                                 <li>
@@ -77,7 +77,6 @@
                                                 type="checkbox"
                                                 value="ribcage"
                                                 id="ribcage"
-                                                checked
                                             />
                                             <label class="form-check-label" for="ribcage">Rib Cage</label>
                                         </div>
@@ -91,7 +90,6 @@
                                                 type="checkbox"
                                                 value="liver"
                                                 id="liver"
-                                                checked
                                             />
                                             <label class="form-check-label" for="liver">Liver</label>
                                         </div>
@@ -105,24 +103,24 @@
                             <a class="nav-link" href="#">About</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">GitHub</a>
+                            <a class="nav-link" target="_blank" href="https://github.com/adityarajsahu/BioLensAR-Prototype.git">GitHub</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
 
-        <div class="container center">
-            <video id="input_video" style="display: none"></video>
+        <div class="container-fluid center">
+            <video id="input_video" class="input_video"></video>
             <canvas
                 id="visualiseCanvas"
                 class="d-flex justify-content-center align-items-center"
-                style="width: 50%; height: 70%"
+                style="width: 50%; height: auto"
             ></canvas>
             <canvas
                 id="renderCanvas"
                 class="d-flex justify-content-center align-items-center"
-                style="width: 50%; height: 70%"
+                style="width: 50%; height: auto"
             ></canvas>
         </div>
         <div
