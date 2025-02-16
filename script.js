@@ -1,5 +1,13 @@
-
-import { distanceBetweenPoints, checkAndShowVisualisation, torsoScalingFactor, getLandmarkFromName } from './utils.js';
+import {
+    distanceBetweenPoints,
+    findMidPoint,
+    disposeMesh,
+    checkAndShowVisualisation,
+    getLandmarkFromName,
+    torsoScalingFactor,
+    calculateAngle,
+    pauseMeshRotation,
+} from "./utils.js";
 
 var loadedMesh;
 function initializeScene(canvasElement) {
@@ -20,8 +28,8 @@ function initializeScene(canvasElement) {
 
         // remove the default cube
         let defaultCube = scene.getMeshByName("Cube");
-        if(defaultCube){
-            defaultCube.dispose();
+        if (defaultCube) {
+            disposeMesh(defaultCube);
         }
     });
 
@@ -32,7 +40,7 @@ function initializeScene(canvasElement) {
 
         let defaultCube = scene.getMeshByName("Cube");
         if (defaultCube) {
-            defaultCube.dispose();
+            disposeMesh(defaultCube);
         }
     });
 
@@ -40,9 +48,10 @@ function initializeScene(canvasElement) {
         loadedMesh = newMeshes;
         // console.log(loadedMesh);
         loadedMesh[1].name = "ribcage";
+
         let defaultCube = scene.getMeshByName("Cube");
         if (defaultCube) {
-            defaultCube.dispose();
+            disposeMesh(defaultCube);
         }
     });
 
@@ -50,9 +59,6 @@ function initializeScene(canvasElement) {
 }
 
 // function to pause the rotation of the mesh that is caused by the dynamic position change
-function pauseMeshRotation(mesh) {
-    mesh.rotationQuaternion = null;
-}
 
 function liverPosition(landmarks, videoWidth, videoHeight) {
     if (!landmarks || !landmarks.length) {
@@ -63,20 +69,14 @@ function liverPosition(landmarks, videoWidth, videoHeight) {
     const leftHip = getLandmarkFromName(landmarks, "LEFT_HIP", videoWidth, videoHeight);
     const rightHip = getLandmarkFromName(landmarks, "RIGHT_HIP", videoWidth, videoHeight);
 
-    const midShoulder = {
-        x: (leftShoulder.x + rightShoulder.x) / 2,
-        y: (leftShoulder.y + rightShoulder.y) / 2,
-    }
-    const midHip = {
-        x: (leftHip.x + rightHip.x) / 2,
-        y: (leftHip.y + rightHip.y) / 2,
-    }
+    const midShoulder = findMidPoint(leftShoulder, rightShoulder);
+    const midHip = findMidPoint(leftHip, rightHip);
 
     const torsoLength = distanceBetweenPoints(midShoulder, midHip);
     const liverPosition = {
         x: 0.8 * midHip.x,
         y: midHip.y - torsoLength / 3,
-    }
+    };
     return liverPosition;
 }
 
@@ -90,22 +90,15 @@ const skullPosition = (landmarks, videoWidth, videoHeight) => {
     const leftShoulder = getLandmarkFromName(landmarks, "LEFT_SHOULDER", videoWidth, videoHeight);
     const rightShoulder = getLandmarkFromName(landmarks, "RIGHT_SHOULDER", videoWidth, videoHeight);
 
-    const midMouth = {
-        x: (mouthLeft.x + mouthRight.x) / 2,
-        y: (mouthLeft.y + mouthRight.y) / 2,
-    };
-
-    const midShoulder = {
-        x: (leftShoulder.x + rightShoulder.x) / 2,
-        y: (leftShoulder.y + rightShoulder.y) / 2,
-    };
+    const midMouth = findMidPoint(mouthLeft, mouthRight);
+    const midShoulder = findMidPoint(leftShoulder, rightShoulder);
 
     const torsoLength = distanceBetweenPoints(midMouth, midShoulder);
-
     const skullCoordinates = {
         x: midMouth.x,
         y: midMouth.y + torsoLength / 3,
     };
+
     return skullCoordinates;
 };
 
@@ -113,40 +106,38 @@ const ribCagePosition = (landmarks, videoWidth, videoHeight) => {
     if (!landmarks || !landmarks.length) {
         return;
     }
+
     const leftShoulder = getLandmarkFromName(landmarks, "LEFT_SHOULDER", videoWidth, videoHeight);
     const rightShoulder = getLandmarkFromName(landmarks, "RIGHT_SHOULDER", videoWidth, videoHeight);
     const leftHip = getLandmarkFromName(landmarks, "LEFT_HIP", videoWidth, videoHeight);
     const rightHip = getLandmarkFromName(landmarks, "RIGHT_HIP", videoWidth, videoHeight);
-    const midShoulder = {
-        x: (leftShoulder.x + rightShoulder.x) / 2,
-        y: (leftShoulder.y + rightShoulder.y) / 2,
-    };
-    const midHip = {
-        x: (leftHip.x + rightHip.x) / 2,
-        y: (leftHip.y + rightHip.y) / 2,
-    };
+
+    const midShoulder = findMidPoint(leftShoulder, rightShoulder);
+    const midHip = findMidPoint(leftHip, rightHip);
+
     const torsoLength = distanceBetweenPoints(midShoulder, midHip);
     const ribCageCoordinates = {
         x: midShoulder.x,
         y: midShoulder.y + torsoLength / 4,
     };
+
     return ribCageCoordinates;
 };
 
-function showLiver({scene, canvas, video, result, viewport}) {
-    checkAndShowVisualisation({scene, canvas, video, result});
+function showLiver({ scene, canvas, video, result, viewport }) {
+    checkAndShowVisualisation({ scene, canvas, video, result });
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     if (!result || !result.poseLandmarks || !result.poseLandmarks.length) {
         return;
     }
     let liverMesh = scene.getMeshByName("liver");
-    if(!liverMesh){
+    if (!liverMesh) {
         return;
     }
-    
+
     const liverPos = liverPosition(result.poseLandmarks, video.videoWidth, video.videoHeight);
-    
+
     const vector = BABYLON.Vector3.Unproject(
         new BABYLON.Vector3(video.videoWidth - liverPos.x, liverPos.y, 1),
         video.videoWidth,
@@ -216,7 +207,14 @@ const showSkull = ({ scene, canvas, video, result, viewport }) => {
     // setting rotation of the mesh
     pauseMeshRotation(skullMesh);
     skullMesh.rotation.x = 0;
-    skullMesh.rotation.y = Math.PI;
+    skullMesh.rotation.y =
+        (Math.PI * 3) / 4 +
+        calculateAngle(
+            getLandmarkFromName(result.poseLandmarks, "LEFT_EAR", video.videoWidth, video.videoHeight),
+            getLandmarkFromName(result.poseLandmarks, "NOSE", video.videoWidth, video.videoHeight),
+            getLandmarkFromName(result.poseLandmarks, "RIGHT_EAR", video.videoWidth, video.videoHeight)
+        ) /
+            75;
     skullMesh.rotation.z = 0;
 
     // dynamic scaling of the mesh
@@ -231,14 +229,18 @@ const showRibCage = ({ scene, canvas, video, result, viewport }) => {
     checkAndShowVisualisation({ scene, canvas, video, result });
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+
     if (!result || !result.poseLandmarks || !result.poseLandmarks.length) {
         return;
     }
+
     const ribCageMesh = scene.getMeshByName("ribcage");
     if (!ribCageMesh) {
         return;
     }
+
     const ribCagePos = ribCagePosition(result.poseLandmarks, video.videoWidth, video.videoHeight);
+
     const vector = BABYLON.Vector3.Unproject(
         new BABYLON.Vector3(video.videoWidth - ribCagePos.x, ribCagePos.y, 1),
         video.videoWidth,
@@ -247,6 +249,7 @@ const showRibCage = ({ scene, canvas, video, result, viewport }) => {
         viewport.getViewMatrix(),
         viewport.getProjectionMatrix()
     );
+
     let ribCageCheck = document.getElementById("ribcage");
     if (ribCageCheck.checked) {
         ribCageMesh.isVisible = true;
@@ -255,19 +258,22 @@ const showRibCage = ({ scene, canvas, video, result, viewport }) => {
     }
     ribCageMesh.position.x = vector.x / 100;
     ribCageMesh.position.y = vector.y / 100;
+
     pauseMeshRotation(ribCageMesh);
     ribCageMesh.rotation.x = Math.PI / 2;
     ribCageMesh.rotation.y = 0;
     ribCageMesh.rotation.z = 0;
+
     const scale = torsoScalingFactor(result.poseLandmarks, video.videoWidth, video.videoHeight);
     ribCageMesh.scaling = new BABYLON.Vector3(scale * 4, scale * 4, scale * 4);
+
     scene.render();
 };
 
-async function initialize(){
+async function initialize() {
     const canvas = document.getElementById("renderCanvas"); // Get the canvas element
-    const video = document.getElementById('input_video');
-    if(!video || !canvas){
+    const video = document.getElementById("input_video");
+    if (!video || !canvas) {
         // setTimeout(initialize, 1000);
         return;
     }
@@ -275,32 +281,34 @@ async function initialize(){
     // initialize the babylon scene
     const scene = initializeScene(canvas);
     const viewport = scene.activeCamera;
-    viewport.position.z =  -100;
+    viewport.position.z = -100;
 
     // loading and configuring the medipipe pose model
-    const pose = new Pose({locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-      }});
+    const pose = new Pose({
+        locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+        },
+    });
     pose.setOptions({
         modelComplexity: 1,
         smoothLandmarks: true,
         enableSegmentation: true,
         smoothSegmentation: true,
         minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        minTrackingConfidence: 0.5,
     });
 
     // setting the camera and sending the video frame to the pose model
     let camera = new Camera(video, {
-        onFrame: async () =>  await pose.send({ image: video }),
+        onFrame: async () => await pose.send({ image: video }),
         width: window.innerWidth,
         height: window.innerHeight,
-        facingMode: "environment"
+        facingMode: "environment",
     });
     camera.start();
 
     pose.onResults((result) => {
-        showLiver({scene, canvas, video, result, viewport});
+        showLiver({ scene, canvas, video, result, viewport });
         showSkull({ scene, canvas, video, result, viewport });
         showRibCage({ scene, canvas, video, result, viewport });
     });
