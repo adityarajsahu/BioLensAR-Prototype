@@ -110,18 +110,17 @@
             </div>
         </nav>
 
-        <div class="container-fluid center">
+        <div class="container-fluid canvas-container">
             <video id="input_video" class="input_video"></video>
-            <canvas
-                id="visualiseCanvas"
-                class="d-flex justify-content-center align-items-center"
-                style="width: 50%; height: auto"
-            ></canvas>
-            <canvas
-                id="renderCanvas"
-                class="d-flex justify-content-center align-items-center"
-                style="width: 50%; height: auto"
-            ></canvas>
+            <div class="d-flex justify-content-center align-items-center">
+                <video id="input_video" class="input_video"></video>
+            </div>
+            <div class="d-flex justify-content-center align-items-center">
+                <canvas id="visualiseCanvas" class="canvas-style"></canvas>
+            </div>
+            <div class="d-flex justify-content-center align-items-center">
+                <canvas id="renderCanvas" class="canvas-style"></canvas>
+            </div>
         </div>
         <div
             class="visualiseContainer mb-3 d-flex justify-content-center align-items-center position-fixed bottom-0 w-100 form-check form-switch"
