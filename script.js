@@ -24,9 +24,19 @@ function initializeScene(canvasElement) {
         }
     });
 
+    BABYLON.SceneLoader.ImportMesh("", "./models/", "skull.glb", scene, function (newMeshes) {
+        loadedMesh = newMeshes;
+        // console.log(loadedMesh);
+        loadedMesh[1].name = "skull";
+
+        let defaultCube = scene.getMeshByName("Cube");
+        if (defaultCube) {
+            defaultCube.dispose();
+        }
+    });
+
     return scene;
 }
-
 
 // function to pause the rotation of the mesh that is caused by the dynamic position change
 function pauseMeshRotation(mesh) {
@@ -58,6 +68,20 @@ function liverPosition(landmarks, videoWidth, videoHeight) {
     }
     return liverPosition;
 }
+
+const skullPosition = (landmarks, videoWidth, videoHeight) => {
+    if (!landmarks || !landmarks.length) {
+        return;
+    }
+
+    const nose = getLandmarkFromName(landmarks, "NOSE", videoWidth, videoHeight);
+
+    const skullCoordinates = {
+        x: nose.x,
+        y: nose.y,
+    };
+    return skullCoordinates;
+};
 
 function showLiver({scene, canvas, video, result, viewport}) {
     checkAndShowVisualisation({scene, canvas, video, result});
@@ -98,8 +122,49 @@ function showLiver({scene, canvas, video, result, viewport}) {
 
     //render the scene
     scene.render();
-    
 }
+
+const showSkull = ({ scene, canvas, video, result, viewport }) => {
+    checkAndShowVisualisation({ scene, canvas, video, result });
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    if (!result || !result.poseLandmarks || !result.poseLandmarks.length) {
+        return;
+    }
+    let skullMesh = scene.getMeshByName("skull");
+    if (!skullMesh) {
+        return;
+    }
+
+    const skullPos = skullPosition(result.poseLandmarks, video.videoWidth, video.videoHeight);
+    console.log(skullPos);
+
+    const vector = BABYLON.Vector3.Unproject(
+        new BABYLON.Vector3(video.videoWidth - skullPos.x, skullPos.y, 1),
+        video.videoWidth,
+        video.videoHeight,
+        BABYLON.Matrix.Identity(),
+        viewport.getViewMatrix(),
+        viewport.getProjectionMatrix()
+    );
+
+    // setting position and visibility of the mesh
+    skullMesh.isVisible = true;
+    skullMesh.position.x = vector.x / 100;
+    skullMesh.position.y = vector.y / 100;
+
+    // setting rotation of the mesh
+    pauseMeshRotation(skullMesh);
+    skullMesh.rotation.x = Math.PI / 2;
+    skullMesh.rotation.y = Math.PI / 2;
+
+    // dynamic scaling of the mesh
+    const scale = torsoScalingFactor(result.poseLandmarks, video.videoWidth, video.videoHeight);
+    skullMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+
+    //render the scene
+    scene.render();
+};
 
 async function initialize(){
     const canvas = document.getElementById("renderCanvas"); // Get the canvas element
@@ -136,7 +201,10 @@ async function initialize(){
     });
     camera.start();
 
-    pose.onResults((result) => showLiver({scene, canvas, video, result, viewport}));
+    pose.onResults((result) => {
+        showLiver({scene, canvas, video, result, viewport});
+        showSkull({ scene, canvas, video, result, viewport });
+    });
 }
 
 window.onload = initialize;
