@@ -157,7 +157,12 @@ function showLiver({scene, canvas, video, result, viewport}) {
     );
 
     // setting position and visibility of the mesh
-    liverMesh.isVisible = true;
+    let liverCheck = document.getElementById("liver");
+    if (liverCheck.checked) {
+        liverMesh.isVisible = true;
+    } else {
+        liverMesh.isVisible = false;
+    }
     liverMesh.position.x = vector.x / 110;
     liverMesh.position.y = vector.y / 110;
 
@@ -199,7 +204,12 @@ const showSkull = ({ scene, canvas, video, result, viewport }) => {
     );
 
     // setting position and visibility of the mesh
-    skullMesh.isVisible = true;
+    let skullCheck = document.getElementById("skull");
+    if (skullCheck.checked) {
+        skullMesh.isVisible = true;
+    } else {
+        skullMesh.isVisible = false;
+    }
     skullMesh.position.x = vector.x / 100;
     skullMesh.position.y = vector.y / 100;
 
@@ -237,7 +247,12 @@ const showRibCage = ({ scene, canvas, video, result, viewport }) => {
         viewport.getViewMatrix(),
         viewport.getProjectionMatrix()
     );
-    ribCageMesh.isVisible = true;
+    let ribCageCheck = document.getElementById("ribcage");
+    if (ribCageCheck.checked) {
+        ribCageMesh.isVisible = true;
+    } else {
+        ribCageMesh.isVisible = false;
+    }
     ribCageMesh.position.x = vector.x / 100;
     ribCageMesh.position.y = vector.y / 100;
     pauseMeshRotation(ribCageMesh);
