@@ -63,7 +63,7 @@ function liverPosition(landmarks, videoWidth, videoHeight) {
 
     const torsoLength = distanceBetweenPoints(midShoulder, midHip);
     const liverPosition = {
-        x: midHip.x,
+        x: 0.8 * midHip.x,
         y: midHip.y - torsoLength / 2,
     }
     return liverPosition;
@@ -74,11 +74,26 @@ const skullPosition = (landmarks, videoWidth, videoHeight) => {
         return;
     }
 
-    const nose = getLandmarkFromName(landmarks, "NOSE", videoWidth, videoHeight);
+    const mouthLeft = getLandmarkFromName(landmarks, "MOUTH_LEFT", videoWidth, videoHeight);
+    const mouthRight = getLandmarkFromName(landmarks, "MOUTH_RIGHT", videoWidth, videoHeight);
+    const leftShoulder = getLandmarkFromName(landmarks, "LEFT_SHOULDER", videoWidth, videoHeight);
+    const rightShoulder = getLandmarkFromName(landmarks, "RIGHT_SHOULDER", videoWidth, videoHeight);
+
+    const midMouth = {
+        x: (mouthLeft.x + mouthRight.x) / 2,
+        y: (mouthLeft.y + mouthRight.y) / 2,
+    };
+
+    const midShoulder = {
+        x: (leftShoulder.x + rightShoulder.x) / 2,
+        y: (leftShoulder.y + rightShoulder.y) / 2,
+    };
+
+    const torsoLength = distanceBetweenPoints(midMouth, midShoulder);
 
     const skullCoordinates = {
-        x: nose.x,
-        y: nose.y,
+        x: midMouth.x,
+        y: midMouth.y + torsoLength / 3,
     };
     return skullCoordinates;
 };
@@ -118,7 +133,7 @@ function showLiver({scene, canvas, video, result, viewport}) {
 
     // dynamic scaling of the mesh
     const scale = torsoScalingFactor(result.poseLandmarks, video.videoWidth, video.videoHeight);
-    liverMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+    liverMesh.scaling = new BABYLON.Vector3(scale / 3, scale / 3, scale / 3);
 
     //render the scene
     scene.render();
@@ -155,12 +170,13 @@ const showSkull = ({ scene, canvas, video, result, viewport }) => {
 
     // setting rotation of the mesh
     pauseMeshRotation(skullMesh);
-    skullMesh.rotation.x = Math.PI / 2;
-    skullMesh.rotation.y = Math.PI / 2;
+    skullMesh.rotation.x = 0;
+    skullMesh.rotation.y = Math.PI;
+    skullMesh.rotation.z = 0;
 
     // dynamic scaling of the mesh
     const scale = torsoScalingFactor(result.poseLandmarks, video.videoWidth, video.videoHeight);
-    skullMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+    skullMesh.scaling = new BABYLON.Vector3(scale / 4, scale / 4, scale / 4);
 
     //render the scene
     scene.render();
